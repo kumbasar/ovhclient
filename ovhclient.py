@@ -2,24 +2,19 @@
 
 import ovh
 import os
+import json
 
-ENDPOINT='ovh-ca'
-
-
-# Instantiate. Visit https://api.ovh.com/createToken/?GET=/me
-# to get your credentials
 client = ovh.Client(
-    endpoint=ENDPOINT,
+    endpoint=os.environ['OVH_EP'],
     application_key=os.environ['OVH_AK'],
     application_secret=os.environ['OVH_AS'],
     consumer_key=os.environ['OVH_CK'],
 )
 
-# Print nice welcome message
 print("Welcome", client.get('/me')['firstname'],client.get('/me')['name'])
 print("Email:", client.get('/me')['email'])
-bills = client.get('/me/bill')
-for bill in bills:
+bill_list = client.get('/me/bill')
+for bill in bill_list:
     details = client.get('/me/bill/%s' % bill)
     print("%12s (%s): %10s --> %s" % (
         bill,
@@ -27,3 +22,10 @@ for bill in bills:
         details['priceWithTax']['text'],
         details['pdfUrl'],
     ))
+
+vps_list = client.get('/vps')
+for vps in vps_list:
+    details = client.get('/vps/%s' % vps)
+    print(json.dumps(details, indent=4))
+    result = client.post('/vps/%s/reboot' % vps)
+    print(json.dumps(result, indent=4))
